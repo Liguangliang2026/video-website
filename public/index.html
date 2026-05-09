@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>剧集列表</title>
+  <style>
+    body{background:#1a1a1a;color:#fff;padding:40px; font-family:Arial}
+    .item{background:#2a2a2a;margin:10px;padding:20px;border-radius:10px;cursor:pointer}
+    .item:hover{background:#e63946}
+  </style>
+</head>
+<body>
+  <h1>🎬 剧集列表</h1>
+  <div class="item" onclick="go(1)">第 1 部《The Wolfless Carpenter Rules the World》</div>
+  <div class="item" onclick="go(2)">第 2 部《Lady CEO’s Fatal Contract》</div>
+  <div class="item" onclick="go(3)">第 3 部《The Discarded Ace》</div>
+  <div class="item" onclick="go(4)">第 4 部《From Butcher to No.1》</div>
+   <!-- <div class="item" onclick="go(2)">第 2 部《The Lost Heiress Returns》</div> -->
+
+  <script>
+    function go(d){ location.href = `/player.html?drama=${d}` }
+  </script>
+</body>
+</html>
