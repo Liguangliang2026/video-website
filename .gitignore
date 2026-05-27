@@ -17,11 +17,25 @@ Thumbs.db
 .env
 .env.local
 .env.development.local
+.dev.vars
 
-# 打包目录（如果你用 Vue/React）
+# 打包目录
 dist/
 build/
 out/
+
+# Vite 构建产物（Cloudflare Pages 上由 npm run build 生成）
+public/index.html
+public/assets/
+
+# Vite 缓存
+.vite/
+*.local
+
+# Wrangler（勿在仓库根目录建 functions -> public/functions 符号链接，会导致 deploy 失败）
+.wrangler/
+/functions
+public/wrangler.toml
 
 # 日志
 npm-debug.log*

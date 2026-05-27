@@ -1,0 +1,480 @@
+/* Watch page — DramaKizz-style adaptive layout + player shell */
+
+.watch-page {
+  --watch-topbar-offset: calc(env(safe-area-inset-top) + 4.5rem);
+  --watch-accent: #2ea6ff;
+  --watch-line: rgba(255, 255, 255, 0.1);
+  --watch-surface: rgba(8, 14, 22, 0.88);
+
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100svh;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 2rem);
+  background:
+    radial-gradient(circle at top, rgba(36, 99, 135, 0.26), transparent 34%),
+    radial-gradient(circle at 86% 10%, rgba(46, 166, 255, 0.16), transparent 24%),
+    linear-gradient(180deg, #08111b 0%, #060b12 44%, #04080d 100%);
+  overflow-x: hidden;
+}
+
+/* Padded content below the player (title, episodes, synopsis) */
+.watch-page__body {
+  width: min(100%, 72rem);
+  margin-inline: auto;
+  padding: 0.88rem max(1rem, env(safe-area-inset-right)) 1.5rem max(1rem, env(safe-area-inset-left));
+}
+
+/* Full-width player — no horizontal inset */
+.watch-page__media {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.watch-stage {
+  width: 100%;
+}
+
+/* Top bar */
+.watch-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: min(100%, 72rem);
+  margin-inline: auto;
+  padding: max(0.65rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.65rem
+    max(1rem, env(safe-area-inset-left));
+  margin-bottom: 0;
+}
+
+.watch-topbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  background: rgba(10, 17, 25, 0.78);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  z-index: -1;
+}
+
+.watch-top-link {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  color: rgba(244, 244, 248, 0.92);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--watch-line);
+  text-decoration: none;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.watch-top-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(46, 166, 255, 0.35);
+}
+
+.watch-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.72rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--watch-line);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.watch-chip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--watch-accent);
+  box-shadow: 0 0 10px rgba(46, 166, 255, 0.65);
+  flex-shrink: 0;
+}
+
+.watch-hint {
+  padding: 2rem 0;
+}
+
+/* Layout grid */
+.watch-layout {
+  display: grid;
+  gap: 0.88rem;
+  margin-top: 0.2rem;
+}
+
+.watch-stage-stack {
+  display: grid;
+  gap: 0.88rem;
+  min-width: 0;
+}
+
+/* Short drama: vertical 9:16 — matches R2/ReelShort exports */
+.watch-player-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 9 / 16;
+  height: auto;
+  max-height: min(75svh, 560px);
+  min-height: 220px;
+  margin-inline: 0;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  background: #0a0a0a;
+}
+
+/* Title block */
+.watch-player-panel {
+  padding: 0 clamp(0.15rem, 1vw, 0.35rem);
+}
+
+.watch-player-title {
+  margin: 0 0 0.5rem;
+  font-family: "Syne", sans-serif;
+  font-size: clamp(1.25rem, 4.5vw, 1.85rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.watch-player-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.watch-player-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.85rem;
+  padding: 0 0.65rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Episode rail — mobile horizontal */
+.watch-episodes-mobile {
+  min-width: 0;
+}
+
+.ep-strip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 0.65rem;
+}
+
+.ep-strip-head h2 {
+  margin: 0;
+  font-family: "Syne", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.ep-strip-head span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.range-tabs {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 0 0 0.65rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.range-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.range-tab {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  padding: 0.35rem 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  position: relative;
+  font-family: inherit;
+}
+
+.range-tab.is-on {
+  color: var(--text);
+}
+
+.range-tab.is-on::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--watch-accent);
+  border-radius: 2px;
+}
+
+.ep-strip {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.ep-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.ep-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  position: relative;
+  min-width: 2.9rem;
+  height: 2.9rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.18s, background 0.18s, transform 0.18s;
+}
+
+.ep-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(46, 166, 255, 0.35);
+}
+
+.ep-chip.is-active {
+  border-color: rgba(46, 166, 255, 0.55);
+  background: rgba(46, 166, 255, 0.16);
+  box-shadow: 0 0 20px rgba(46, 166, 255, 0.2);
+}
+
+.ep-chip.is-vip:not(.is-active) {
+  opacity: 0.85;
+}
+
+.ep-chip__num {
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+
+.ep-chip__vip {
+  position: absolute;
+  top: -5px;
+  right: -4px;
+  padding: 2px 5px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #ff6b35, #7c5cff);
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* Desktop episode rail */
+.watch-rail-panel {
+  display: none;
+}
+
+.watch-episode-rail {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.watch-episode-card {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 2.65rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, transform 0.18s;
+}
+
+.watch-episode-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(46, 166, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.watch-episode-card.is-active {
+  border-color: rgba(46, 166, 255, 0.55);
+  background: rgba(46, 166, 255, 0.16);
+}
+
+.watch-episode-card__number {
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+
+.watch-rail-head {
+  margin: 0 0 0.75rem;
+  font-family: "Syne", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+/* Synopsis */
+.detail-synopsis {
+  padding: 0.25rem 0 1.5rem;
+}
+
+.detail-synopsis__title {
+  margin: 0 0 0.75rem;
+  font-family: "Syne", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.detail-synopsis__card {
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  background: linear-gradient(rgba(255, 255, 255, 0.05), transparent), var(--watch-surface);
+  border: 1px solid var(--watch-line);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22);
+}
+
+.detail-synopsis__text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #f5f9ffb8;
+}
+
+.detail-synopsis__text.is-clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.detail-synopsis__toggle {
+  display: block;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #f5f9ffb8;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s;
+}
+
+.detail-synopsis__toggle:hover {
+  color: #f5f9ff;
+}
+
+.detail-synopsis__toggle:focus-visible {
+  outline: 2px solid rgba(255, 107, 53, 0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Tablet+ */
+@media (min-width: 640px) {
+  .watch-page {
+    --watch-topbar-offset: calc(env(safe-area-inset-top) + 4.75rem);
+  }
+
+  .watch-player-wrap {
+    max-height: min(68svh, 600px);
+    border-radius: 1rem;
+  }
+
+  .watch-layout {
+    grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
+    align-items: start;
+    gap: 1.05rem;
+  }
+
+  .watch-episodes-mobile {
+    display: none;
+  }
+
+  .watch-rail-panel {
+    display: block;
+    padding: 0.9rem;
+    border-radius: 1.25rem;
+    background: linear-gradient(rgba(255, 255, 255, 0.04), transparent), var(--watch-surface);
+    border: 1px solid var(--watch-line);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+    position: sticky;
+    top: calc(var(--watch-topbar-offset) + 0.5rem);
+    max-height: calc(100lvh - var(--watch-topbar-offset) - 1rem);
+    overflow: auto;
+    scrollbar-width: thin;
+  }
+}
+
+@media (min-width: 1024px) {
+  .watch-page__body,
+  .watch-topbar {
+    width: min(100%, 82rem);
+  }
+
+  .watch-layout {
+    grid-template-columns: minmax(0, 1.45fr) minmax(16.5rem, 0.55fr);
+    gap: 1.15rem;
+  }
+
+  .watch-rail-panel {
+    max-width: 20.5rem;
+    justify-self: end;
+    width: 100%;
+  }
+}

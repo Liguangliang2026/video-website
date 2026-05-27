@@ -1,0 +1,28 @@
+{
+  "name": "localserver",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:online": "VITE_API_PROXY=https://creativevideo.net vite",
+    "dev:api": "wrangler pages dev --port 8788",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && cp wrangler.toml public/wrangler.toml && wrangler pages deploy . --project-name=creativevideo --commit-dirty=true --cwd=public",
+    "deploy:secrets": "wrangler pages secret list --project-name=creativevideo",
+    "sync:r2-episodes": "node scripts/sync-r2-episodes.mjs",
+    "add:drama": "node scripts/add-r2-drama.mjs",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "vue": "^3.5.22",
+    "vue-router": "^4.5.1",
+    "xgplayer": "^3.0.24"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "vite": "^7.1.9",
+    "wrangler": "^4.92.0"
+  }
+}

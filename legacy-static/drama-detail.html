@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Series — Short Dramas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg0: #06060a;
+      --bg1: #0c0c14;
+      --surface: rgba(18, 18, 28, 0.72);
+      --stroke: rgba(255, 255, 255, 0.08);
+      --text: #f4f4f8;
+      --muted: #9898a8;
+      --accent: #ff6b35;
+      --accent2: #7c5cff;
+      --radius: 18px;
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes bg-drift {
+      0%, 100% { background-position: 0% 40%, 100% 60%; }
+      50% { background-position: 100% 50%, 0% 40%; }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(124, 92, 255, 0.18), transparent 55%),
+        radial-gradient(900px 500px at 90% 20%, rgba(255, 107, 53, 0.12), transparent 50%),
+        linear-gradient(165deg, var(--bg0) 0%, var(--bg1) 45%, #080810 100%);
+      background-size: 200% 200%, 200% 200%, 100% 100%;
+      animation: bg-drift 18s ease-in-out infinite;
+      color: var(--text);
+      font-family: "Outfit", system-ui, sans-serif;
+    }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 20px 16px 56px;
+    }
+
+    .back-row {
+      margin-bottom: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: color 0.2s var(--ease-out);
+    }
+
+    .back-link:hover {
+      color: var(--text);
+    }
+
+    .detail-hero {
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--stroke);
+      margin-bottom: 28px;
+    }
+
+    .detail-hero__media {
+      aspect-ratio: 16 / 9;
+      background: #1a1a24 center / cover;
+    }
+
+    .detail-hero__body {
+      padding: 22px 20px 24px;
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+    }
+
+    .detail-hero__title {
+      font-family: "Syne", "Outfit", sans-serif;
+      font-size: clamp(1.35rem, 4vw, 1.75rem);
+      font-weight: 800;
+      margin: 0 0 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .detail-hero__meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .detail-intro {
+      margin: 0 0 28px;
+      line-height: 1.65;
+      color: rgba(244, 244, 248, 0.88);
+      font-size: 0.98rem;
+    }
+
+    .section-title {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin: 0 0 14px;
+      letter-spacing: -0.02em;
+    }
+
+    .ep-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ep-row {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--stroke);
+      text-align: left;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      transition: background 0.2s var(--ease-out), border-color 0.2s;
+    }
+
+    .ep-row:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 107, 53, 0.35);
+    }
+
+    .ep-row:disabled {
+      cursor: default;
+      opacity: 0.65;
+    }
+
+    .ep-row__num {
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--accent2);
+      text-align: center;
+    }
+
+    .ep-row__title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin: 0;
+      line-height: 1.35;
+    }
+
+    .ep-row__action {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .hint {
+      padding: 20px;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--stroke);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .hint--err {
+      color: #ffb4a8;
+      border-color: rgba(255, 107, 53, 0.35);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="back-row">
+      <a class="back-link" href="index.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>
+        Back to discover
+      </a>
+    </div>
+
+    <div id="state-loading" class="hint">Loading series…</div>
+    <div id="state-error" class="hint hint--err" hidden></div>
+
+    <div id="state-main" hidden>
+      <div class="detail-hero">
+        <div class="detail-hero__media" id="cover"></div>
+        <div class="detail-hero__body">
+          <h1 class="detail-hero__title" id="title"></h1>
+          <p class="detail-hero__meta" id="meta"></p>
+        </div>
+      </div>
+      <p class="detail-intro" id="intro"></p>
+      <h2 class="section-title">Episodes</h2>
+      <div class="ep-list" id="episodes" role="list"></div>
+    </div>
+  </div>
+
+  <script>
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function pickPlayUrl(ep) {
+      const keys = [
+        "play_url", "video_url", "url", "m3u8_url", "hls_url",
+        "playUrl", "videoUrl"
+      ];
+      for (const k of keys) {
+        const v = ep[k];
+        if (typeof v === "string" && /^https?:\/\//i.test(v.trim())) return v.trim();
+      }
+      return "";
+    }
+
+    function episodeLabel(ep, idx) {
+      const n = ep.episode_index ?? ep.episode_num ?? ep.sort ?? ep.episode_no ?? ep.num ?? (idx + 1);
+      return Number.isFinite(Number(n)) ? Number(n) : idx + 1;
+    }
+
+    function episodeTitle(ep, idx) {
+      const t = ep.episode_title ?? ep.title ?? ep.episode_name ?? ep.name;
+      if (typeof t === "string" && t.trim()) return t.trim();
+      return `Episode ${episodeLabel(ep, idx)}`;
+    }
+
+    function extractEpisodeList(body) {
+      if (!body || typeof body !== "object") return [];
+      const d = body.data;
+      const raw =
+        (Array.isArray(d?.list) && d.list) ||
+        (Array.isArray(d?.episode_list) && d.episode_list) ||
+        (Array.isArray(body.list) && body.list) ||
+        [];
+      return raw;
+    }
+
+    const loadingEl = document.getElementById("state-loading");
+    const errorEl = document.getElementById("state-error");
+    const mainEl = document.getElementById("state-main");
+    const coverEl = document.getElementById("cover");
+    const titleEl = document.getElementById("title");
+    const metaEl = document.getElementById("meta");
+    const introEl = document.getElementById("intro");
+    const episodesEl = document.getElementById("episodes");
+
+    function showError(msg) {
+      loadingEl.hidden = true;
+      mainEl.hidden = true;
+      errorEl.hidden = false;
+      errorEl.textContent = msg;
+    }
+
+    function showMain() {
+      loadingEl.hidden = true;
+      errorEl.hidden = true;
+      mainEl.hidden = false;
+    }
+
+    const params = new URLSearchParams(location.search);
+    const videoId = String(params.get("video_id") ?? "").trim();
+
+    if (!/^\d+$/.test(videoId)) {
+      showError("Missing or invalid video_id. Open this page from the home grid or banner.");
+    } else {
+      void loadDetail(videoId);
+    }
+
+    async function loadDetail(videoId) {
+      try {
+        const listUrl = `/api/drama/list?video_id=${encodeURIComponent(videoId)}&page=1&page_size=1`;
+        const epUrl = `/api/drama/episode-list?video_id=${encodeURIComponent(videoId)}`;
+
+        const [listRes, epRes] = await Promise.all([fetch(listUrl), fetch(epUrl)]);
+        const listJson = await listRes.json();
+        const epJson = await epRes.json();
+
+        if (epJson.code !== 0) {
+          throw new Error(epJson.msg || epJson.error || "Could not load episodes");
+        }
+
+        const item =
+          (listJson.code === 0 && listJson.data && Array.isArray(listJson.data.list) && listJson.data.list[0]) ||
+          null;
+
+        const title = item ? (item.video_title || "Untitled") : `Series ${videoId}`;
+        const total = item?.video_total;
+        const logo = item?.logo_img || "";
+        const intro = (item?.recommendation || item?.introduce || "").trim() || "—";
+
+        titleEl.textContent = title;
+        metaEl.textContent =
+          total != null && total !== ""
+            ? `${total} episodes · ID ${videoId}`
+            : `ID ${videoId}`;
+
+        if (logo) {
+          coverEl.style.backgroundImage = `url('${String(logo).replace(/'/g, "\\'")}')`;
+        }
+
+        introEl.textContent = intro;
+
+        const eps = extractEpisodeList(epJson);
+        episodesEl.innerHTML = "";
+
+        if (!eps.length) {
+          const p = document.createElement("p");
+          p.className = "hint";
+          p.textContent = "No episode rows in the API response.";
+          episodesEl.appendChild(p);
+        } else {
+          eps.forEach((ep, idx) => {
+            const url = pickPlayUrl(ep);
+            const row = document.createElement(url ? "a" : "button");
+            row.className = "ep-row";
+            row.setAttribute("role", "listitem");
+            if (url) {
+              row.href = url;
+              row.target = "_blank";
+              row.rel = "noopener noreferrer";
+            } else {
+              row.type = "button";
+              row.disabled = true;
+            }
+
+            const num = document.createElement("span");
+            num.className = "ep-row__num";
+            num.textContent = String(episodeLabel(ep, idx));
+
+            const mid = document.createElement("div");
+            const h = document.createElement("p");
+            h.className = "ep-row__title";
+            h.textContent = episodeTitle(ep, idx);
+            mid.appendChild(h);
+
+            const act = document.createElement("span");
+            act.className = "ep-row__action";
+            act.textContent = url ? "Open" : "No URL";
+
+            row.appendChild(num);
+            row.appendChild(mid);
+            row.appendChild(act);
+            episodesEl.appendChild(row);
+          });
+        }
+
+        showMain();
+      } catch (e) {
+        showError(e.message || "Failed to load");
+      }
+    }
+  </script>
+</body>
+
+</html>

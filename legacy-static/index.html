@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Discover — Short Dramas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg0: #06060a;
+      --bg1: #0c0c14;
+      --surface: rgba(18, 18, 28, 0.72);
+      --stroke: rgba(255, 255, 255, 0.08);
+      --text: #f4f4f8;
+      --muted: #9898a8;
+      --accent: #ff6b35;
+      --accent2: #7c5cff;
+      --glow: rgba(255, 107, 53, 0.45);
+      --hero-h: min(52vh, 420px);
+      --radius: 18px;
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes bg-drift {
+      0%, 100% { background-position: 0% 40%, 100% 60%, 50% 50%; }
+      50% { background-position: 100% 50%, 0% 40%, 50% 50%; }
+    }
+
+    @keyframes grain {
+      0%, 100% { transform: translate(0, 0); opacity: 0.35; }
+      50% { transform: translate(-2%, 2%); opacity: 0.5; }
+    }
+
+    @keyframes float-orbs {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(3%, -2%) scale(1.05); }
+      66% { transform: translate(-2%, 3%) scale(0.98); }
+    }
+
+    @keyframes shimmer-line {
+      0% { transform: translateX(-120%) skewX(-12deg); opacity: 0; }
+      15% { opacity: 1; }
+      100% { transform: translateX(220%) skewX(-12deg); opacity: 0; }
+    }
+
+    @keyframes card-rise {
+      from {
+        opacity: 0;
+        transform: translateY(28px) scale(0.96);
+        filter: blur(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes hero-ken {
+      from { transform: scale(1.08); }
+      to { transform: scale(1); }
+    }
+
+    @keyframes progress {
+      from { transform: scaleX(0); transform-origin: left; }
+      to { transform: scaleX(1); transform-origin: left; }
+    }
+
+    @keyframes title-glow {
+      0%, 100% { text-shadow: 0 0 40px rgba(255, 107, 53, 0.25), 0 0 80px rgba(124, 92, 255, 0.15); }
+      50% { text-shadow: 0 0 60px rgba(124, 92, 255, 0.35), 0 0 100px rgba(255, 107, 53, 0.2); }
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(124, 92, 255, 0.18), transparent 55%),
+        radial-gradient(900px 500px at 90% 20%, rgba(255, 107, 53, 0.12), transparent 50%),
+        linear-gradient(165deg, var(--bg0) 0%, var(--bg1) 45%, #080810 100%);
+      background-size: 200% 200%, 200% 200%, 100% 100%;
+      animation: bg-drift 18s ease-in-out infinite;
+      color: var(--text);
+      font-family: "Outfit", system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Film grain overlay */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.06;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      animation: grain 8s steps(4) infinite;
+      z-index: 0;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      animation: float-orbs 14s ease-in-out infinite;
+    }
+
+    .orb-a {
+      width: min(45vw, 380px);
+      height: min(45vw, 380px);
+      top: -8%;
+      right: -5%;
+      background: rgba(124, 92, 255, 0.35);
+    }
+
+    .orb-b {
+      width: min(50vw, 420px);
+      height: min(50vw, 420px);
+      bottom: -10%;
+      left: -8%;
+      background: rgba(255, 107, 53, 0.22);
+      animation-delay: -4s;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 16px 48px;
+    }
+
+    /* --- Hero carousel --- */
+    .hero {
+      position: relative;
+      margin: 0 -16px 28px;
+      height: var(--hero-h);
+      border-radius: 0 0 var(--radius) var(--radius);
+      overflow: hidden;
+      box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.55),
+        0 0 0 1px var(--stroke);
+    }
+
+    .hero__slides {
+      position: absolute;
+      inset: 0;
+    }
+
+    .hero-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.85s var(--ease-out), visibility 0.85s;
+    }
+
+    .hero-slide.is-active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .hero-slide__media {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transform: scale(1.12);
+      transition: transform 8s linear;
+    }
+
+    .hero-slide.is-active .hero-slide__media {
+      animation: hero-ken 8s var(--ease-out) forwards;
+    }
+
+    .hero-slide__shade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        rgba(6, 6, 10, 0.92) 0%,
+        rgba(6, 6, 10, 0.55) 42%,
+        rgba(6, 6, 10, 0.25) 100%
+      );
+    }
+
+    .hero-slide__accent {
+      position: absolute;
+      inset: 0;
+      mix-blend-mode: soft-light;
+      opacity: 0.5;
+      background: var(--slide-tint, linear-gradient(135deg, #ff6b35, #7c5cff));
+    }
+
+    .hero-slide__content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: max(20px, env(safe-area-inset-top)) 22px 52px;
+      max-width: 560px;
+    }
+
+    .hero-slide__tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s 0.15s var(--ease-out), transform 0.6s 0.15s var(--ease-out);
+    }
+
+    .hero-slide.is-active .hero-slide__tag {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hero-slide__tag::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 14px var(--glow);
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.7; }
+    }
+
+    .hero-slide__title {
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.45rem, 4.5vw, 2.1rem);
+      line-height: 1.1;
+      margin: 0 0 10px;
+      letter-spacing: -0.02em;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.65s 0.22s var(--ease-out), transform 0.65s 0.22s var(--ease-out);
+    }
+
+    .hero-slide.is-active .hero-slide__title {
+      opacity: 1;
+      transform: translateY(0);
+      animation: title-glow 4s ease-in-out infinite;
+    }
+
+    .hero-slide__meta {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin: 0;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s 0.32s var(--ease-out), transform 0.6s 0.32s var(--ease-out);
+    }
+
+    .hero-slide.is-active .hero-slide__meta {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hero__shine {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+      animation: shimmer-line 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .hero__controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+      background: linear-gradient(to top, rgba(6, 6, 10, 0.9), transparent);
+    }
+
+    .hero__dots {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .hero__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: none;
+      padding: 0;
+      background: rgba(255, 255, 255, 0.22);
+      cursor: pointer;
+      transition: transform 0.35s var(--ease-out), background 0.35s, width 0.35s;
+    }
+
+    .hero__dot.is-active {
+      background: var(--accent);
+      width: 26px;
+      border-radius: 999px;
+      box-shadow: 0 0 16px var(--glow);
+    }
+
+    .hero__nav {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--stroke);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      backdrop-filter: blur(10px);
+      transition: background 0.25s, transform 0.25s var(--ease-out), border-color 0.25s;
+    }
+
+    .hero__nav:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 107, 53, 0.45);
+      transform: scale(1.06);
+    }
+
+    .hero__nav:active {
+      transform: scale(0.94);
+    }
+
+    .hero__nav svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .hero__progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hero__progress-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    .hero__progress-bar.is-ticking {
+      animation: progress var(--tick-duration, 6s) linear forwards;
+    }
+
+    /* --- Section + list --- */
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      font-family: "Syne", sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .section-head span {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .drama-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .drama-card {
+      --delay: 0s;
+      position: relative;
+      display: grid;
+      grid-template-columns: 108px 1fr;
+      gap: 16px;
+      padding: 14px 16px 14px 14px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      cursor: pointer;
+      text-align: left;
+      color: inherit;
+      font: inherit;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+      animation: card-rise 0.75s var(--ease-out) both;
+      animation-delay: var(--delay);
+      transition:
+        transform 0.45s var(--ease-out),
+        border-color 0.35s,
+        box-shadow 0.45s;
+    }
+
+    .drama-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 40%, rgba(255, 255, 255, 0.05) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.6s var(--ease-out);
+    }
+
+    .drama-card:hover {
+      transform: translateY(-4px) scale(1.01);
+      border-color: rgba(255, 107, 53, 0.35);
+      box-shadow:
+        0 16px 48px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(255, 107, 53, 0.12),
+        0 0 40px rgba(124, 92, 255, 0.12);
+    }
+
+    .drama-card:hover::after {
+      transform: translateX(100%);
+    }
+
+    .drama-card:active {
+      transform: translateY(-1px) scale(0.995);
+    }
+
+    .drama-card__thumb {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      aspect-ratio: 3 / 4;
+      background-size: cover;
+      background-position: center;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .drama-card__thumb::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.65) 100%);
+    }
+
+    .drama-card__ep {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .drama-card__body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .drama-card__title {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.02rem;
+      line-height: 1.25;
+      margin: 0 0 8px;
+    }
+
+    .drama-card__sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 0 0 12px;
+      line-height: 1.45;
+    }
+
+    .drama-card__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .drama-card__cta svg {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.35s var(--ease-out);
+    }
+
+    .drama-card:hover .drama-card__cta svg {
+      transform: translateX(4px);
+    }
+
+    .drama-pager {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 24px;
+      padding: 14px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+    }
+
+    .drama-pager[hidden] {
+      display: none !important;
+    }
+
+    .drama-pager__info {
+      font-size: 0.82rem;
+      color: var(--muted);
+      width: 100%;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .drama-pager__btn {
+      font: inherit;
+      cursor: pointer;
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: background 0.25s, border-color 0.25s;
+    }
+
+    .drama-pager__btn:hover:not(:disabled) {
+      border-color: rgba(255, 107, 53, 0.4);
+      background: rgba(255, 107, 53, 0.12);
+    }
+
+    .drama-pager__btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .drama-load-hint {
+      text-align: center;
+      padding: 28px 16px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .drama-load-hint--err {
+      color: #ff8a7a;
+    }
+
+    /* Top-right account */
+    .site-account-trigger {
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top));
+      right: max(16px, env(safe-area-inset-right));
+      z-index: 40;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 50%;
+      border: 1px solid var(--stroke);
+      background: rgba(18, 18, 28, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: var(--text);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+      transition: transform 0.25s var(--ease-out), border-color 0.25s, box-shadow 0.35s;
+      font-family: inherit;
+    }
+
+    .site-account-trigger:hover {
+      border-color: rgba(255, 107, 53, 0.45);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 24px rgba(255, 107, 53, 0.15);
+      transform: scale(1.05);
+    }
+
+    .site-account-trigger:active {
+      transform: scale(0.96);
+    }
+
+    .site-account-trigger:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .site-account-trigger__img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .site-account-trigger__img[hidden] {
+      display: none !important;
+    }
+
+    .site-account-trigger__placeholder {
+      width: 22px;
+      height: 22px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .site-account-trigger__placeholder[hidden] {
+      display: none !important;
+    }
+
+    .site-account-trigger__placeholder svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .site-account-trigger.has-photo {
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .account-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    .account-modal.is-open {
+      display: flex;
+    }
+
+    .account-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 6, 10, 0.78);
+      backdrop-filter: blur(6px);
+    }
+
+    .account-modal__panel {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      padding: 22px 20px 20px;
+      border-radius: var(--radius);
+      background: rgba(14, 14, 22, 0.96);
+      border: 1px solid var(--stroke);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+    }
+
+    .account-modal__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .account-modal__head h3 {
+      margin: 0;
+      font-family: "Syne", sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .account-modal__sub {
+      margin: 6px 0 18px;
+      font-size: 0.86rem;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .account-modal__close {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-family: inherit;
+      font-size: 1.35rem;
+      line-height: 1;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .account-modal__close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+    }
+
+    .account-login-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .account-login-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      font-size: 0.92rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.15s var(--ease-out), box-shadow 0.25s, border-color 0.2s;
+    }
+
+    .account-login-btn:active {
+      transform: scale(0.98);
+    }
+
+    .account-login-btn svg {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+    }
+
+    .account-login-btn--google {
+      background: #fff;
+      color: #1f1f1f;
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    }
+
+    .account-login-btn--google:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    }
+
+    .account-login-btn--apple {
+      background: #000;
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .account-login-btn--apple:hover {
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    @media (max-width: 520px) {
+      .drama-card {
+        grid-template-columns: 92px 1fr;
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .hero__nav {
+        width: 38px;
+        height: 38px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body,
+      .orb,
+      .hero-slide__media,
+      .hero-slide.is-active .hero-slide__title,
+      .hero__shine,
+      .hero__progress-bar,
+      .drama-card {
+        animation: none !important;
+      }
+
+      .hero-slide__media {
+        transform: scale(1) !important;
+      }
+
+      .drama-card {
+        opacity: 1;
+        transform: none;
+        filter: none;
+      }
+
+      .hero-slide {
+        transition-duration: 0.01ms;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="orb orb-a" aria-hidden="true"></div>
+  <div class="orb orb-b" aria-hidden="true"></div>
+
+  <button type="button" class="site-account-trigger" id="account-trigger" aria-label="Account and sign in" aria-haspopup="dialog" aria-expanded="false">
+    <img class="site-account-trigger__img" id="account-avatar-img" alt="" width="44" height="44" hidden>
+    <span class="site-account-trigger__placeholder" id="account-avatar-placeholder" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    </span>
+  </button>
+
+  <div class="account-modal" id="account-modal" role="dialog" aria-labelledby="account-modal-title" aria-modal="true">
+    <div class="account-modal__backdrop" id="account-modal-backdrop"></div>
+    <div class="account-modal__panel">
+      <div class="account-modal__head">
+        <h3 id="account-modal-title">Sign in</h3>
+        <button type="button" class="account-modal__close" id="account-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <p class="account-modal__sub">Choose a sign-in method to continue.</p>
+      <div class="account-login-list">
+        <button type="button" class="account-login-btn account-login-btn--google" id="login-google">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+          </svg>
+          Continue with Google
+        </button>
+        <button type="button" class="account-login-btn account-login-btn--apple" id="login-apple">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+          </svg>
+          Continue with Apple
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <header class="hero" role="region" aria-roledescription="carousel" aria-label="Featured dramas">
+      <div class="hero__slides" id="hero-slides"></div>
+      <div class="hero__shine" aria-hidden="true"></div>
+      <div class="hero__progress" aria-hidden="true">
+        <div class="hero__progress-bar" id="hero-progress"></div>
+      </div>
+      <div class="hero__controls">
+        <button type="button" class="hero__nav" id="hero-prev" aria-label="Previous slide">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <div class="hero__dots" id="hero-dots" role="tablist" aria-label="Slides"></div>
+        <button type="button" class="hero__nav" id="hero-next" aria-label="Next slide">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="section-head">
+      <h2>All series</h2>
+      <span id="series-count"></span>
+    </div>
+
+    <div class="drama-grid" id="drama-grid" role="list"></div>
+    <div class="drama-pager" id="drama-pager" hidden>
+      <div class="drama-pager__info" id="drama-pager-info"></div>
+      <button type="button" class="drama-pager__btn" id="drama-pager-prev">Previous</button>
+      <button type="button" class="drama-pager__btn" id="drama-pager-next">Next</button>
+    </div>
+  </div>
+
+  <script>
+    let bannerDramas = [];
+    let gridDramas = [];
+    let gridPage = 1;
+    let gridPages = 1;
+    let gridTotal = 0;
+    const GRID_PAGE_SIZE = 10;
+    const BANNER_SIZE = 5;
+
+    const pagerRoot = document.getElementById("drama-pager");
+    const pagerInfo = document.getElementById("drama-pager-info");
+    const pagerPrev = document.getElementById("drama-pager-prev");
+    const pagerNext = document.getElementById("drama-pager-next");
+
+    const AUTO_MS = 6000;
+    const slidesRoot = document.getElementById("hero-slides");
+    const dotsRoot = document.getElementById("hero-dots");
+    const progress = document.getElementById("hero-progress");
+    const grid = document.getElementById("drama-grid");
+    const countEl = document.getElementById("series-count");
+
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function pickTint(i) {
+      const tints = [
+        "linear-gradient(135deg, rgba(255,107,53,0.5), rgba(124,92,255,0.4))",
+        "linear-gradient(135deg, rgba(124,92,255,0.5), rgba(255,107,53,0.35))",
+        "linear-gradient(135deg, rgba(80,200,255,0.35), rgba(124,92,255,0.45))",
+        "linear-gradient(135deg, rgba(255,107,53,0.45), rgba(255,200,80,0.25))",
+        "linear-gradient(135deg, rgba(200,120,255,0.4), rgba(255,107,53,0.3))",
+      ];
+      return tints[i % tints.length];
+    }
+
+    function mapApiItem(it, i) {
+      const tag = (it.recommendation || it.introduce || "").trim();
+      return {
+        video_id: it.video_id,
+        title: it.video_title || "Untitled",
+        tagline: tag.length > 140 ? `${tag.slice(0, 137)}…` : tag || "—",
+        episodes: it.video_total ?? 0,
+        image: it.logo_img || "",
+        tint: pickTint(i),
+      };
+    }
+
+    async function apiDramaList(params) {
+      const q = new URLSearchParams(params);
+      const res = await fetch(`/api/drama/list?${q.toString()}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    async function loadHome() {
+      const bannerRes = await apiDramaList({ page: 1, page_size: BANNER_SIZE });
+      if (bannerRes.code !== 0) throw new Error(bannerRes.msg || "Banner API error");
+      const list = (bannerRes.data && bannerRes.data.list) || [];
+      bannerDramas = list.map(mapApiItem);
+      buildSlides();
+      index = 0;
+      if (bannerDramas.length > 1) startTimer();
+      else clearTimer();
+
+      await loadGridPage(1);
+    }
+
+    async function loadGridPage(p) {
+      const g = await apiDramaList({ page: p, page_size: GRID_PAGE_SIZE });
+      if (g.code !== 0) throw new Error(g.msg || "List API error");
+      gridPage = g.data?.page ?? p;
+      gridPages = g.data?.pages ?? 1;
+      gridTotal = g.data?.total ?? 0;
+      gridDramas = ((g.data && g.data.list) || []).map((it, i) => mapApiItem(it, i));
+      buildGrid();
+      renderPager();
+    }
+
+    async function changeGridPage(next) {
+      if (next < 1 || next > gridPages) return;
+      pagerPrev.disabled = true;
+      pagerNext.disabled = true;
+      try {
+        await loadGridPage(next);
+      } catch (e) {
+        grid.innerHTML = `<div class="drama-load-hint drama-load-hint--err">${escapeHtml(e.message)}</div>`;
+      } finally {
+        pagerPrev.disabled = false;
+        pagerNext.disabled = false;
+      }
+    }
+
+    function renderPager() {
+      if (gridPages <= 1) {
+        pagerRoot.hidden = true;
+        return;
+      }
+      pagerRoot.hidden = false;
+      pagerInfo.textContent = `Page ${gridPage} of ${gridPages} · ${gridTotal} titles`;
+      pagerPrev.disabled = gridPage <= 1;
+      pagerNext.disabled = gridPage >= gridPages;
+    }
+
+    const accountTrigger = document.getElementById("account-trigger");
+    const accountModal = document.getElementById("account-modal");
+    const accountAvatarImg = document.getElementById("account-avatar-img");
+    const accountAvatarPlaceholder = document.getElementById("account-avatar-placeholder");
+    const ACCOUNT_STORAGE_KEY = "watch_player_user";
+
+    function syncAccountAvatar() {
+      let user = null;
+      try {
+        const raw = localStorage.getItem(ACCOUNT_STORAGE_KEY);
+        if (raw) user = JSON.parse(raw);
+      } catch {
+        /* ignore */
+      }
+      const pic = user && typeof user.picture === "string" && user.picture.trim() ? user.picture.trim() : "";
+      if (pic) {
+        accountAvatarImg.src = pic;
+        accountAvatarImg.alt = user.name || "Signed in";
+        accountAvatarImg.removeAttribute("hidden");
+        accountAvatarPlaceholder.setAttribute("hidden", "");
+        accountTrigger.classList.add("has-photo");
+      } else {
+        accountAvatarImg.removeAttribute("src");
+        accountAvatarImg.setAttribute("hidden", "");
+        accountAvatarPlaceholder.removeAttribute("hidden");
+        accountTrigger.classList.remove("has-photo");
+      }
+    }
+
+    function openAccountModal() {
+      accountModal.classList.add("is-open");
+      accountTrigger.setAttribute("aria-expanded", "true");
+      const first = accountModal.querySelector(".account-login-btn");
+      if (first) first.focus();
+    }
+
+    function closeAccountModal() {
+      accountModal.classList.remove("is-open");
+      accountTrigger.setAttribute("aria-expanded", "false");
+      accountTrigger.focus();
+    }
+
+    async function onLoginGoogleClick() {
+      closeAccountModal();
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            googleToken: "demo",
+            googleId: "demo",
+            email: "demo@example.com",
+            name: "Google user",
+            picture: "https://ui-avatars.com/api/?name=G&background=4285f4&color=fff&bold=true&size=128",
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (data.code === 200 && data.user) {
+          localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify({ ...data.user, provider: "google" }));
+        } else {
+          localStorage.setItem(
+            ACCOUNT_STORAGE_KEY,
+            JSON.stringify({
+              name: "Google user",
+              email: "demo@example.com",
+              picture: "https://ui-avatars.com/api/?name=G&background=4285f4&color=fff&bold=true&size=128",
+              provider: "google",
+            }),
+          );
+        }
+      } catch {
+        localStorage.setItem(
+          ACCOUNT_STORAGE_KEY,
+          JSON.stringify({
+            name: "Google user",
+            picture: "https://ui-avatars.com/api/?name=G&background=4285f4&color=fff&bold=true&size=128",
+            provider: "google",
+          }),
+        );
+      }
+      syncAccountAvatar();
+    }
+
+    function onLoginAppleClick() {
+      closeAccountModal();
+      try {
+        localStorage.setItem(
+          ACCOUNT_STORAGE_KEY,
+          JSON.stringify({
+            name: "Apple user",
+            picture: "https://ui-avatars.com/api/?name=A&background=1a1a1a&color=ffffff&bold=true&size=128",
+            provider: "apple",
+          }),
+        );
+      } catch {
+        /* ignore */
+      }
+      syncAccountAvatar();
+    }
+
+    syncAccountAvatar();
+
+    let index = 0;
+    let timer = null;
+
+    function goDetail(videoId) {
+      location.href = `drama-detail.html?video_id=${encodeURIComponent(videoId)}`;
+    }
+
+    function buildSlides() {
+      slidesRoot.innerHTML = "";
+      dotsRoot.innerHTML = "";
+      const list = bannerDramas.length
+        ? bannerDramas
+        : [{ video_id: 0, title: "No series", tagline: "Check /api/drama/list", episodes: 0, image: "", tint: pickTint(0) }];
+
+      list.forEach((d, i) => {
+        const slide = document.createElement("article");
+        slide.className = "hero-slide" + (i === 0 ? " is-active" : "");
+        slide.setAttribute("aria-hidden", i === 0 ? "false" : "true");
+        slide.style.setProperty("--slide-tint", d.tint);
+        const bg = d.image ? `background-image:url('${String(d.image).replace(/'/g, "\\'")}')` : "background:#1a1a24";
+        slide.innerHTML = `
+          <div class="hero-slide__media" style="${bg}"></div>
+          <div class="hero-slide__shade"></div>
+          <div class="hero-slide__accent"></div>
+          <div class="hero-slide__content">
+            <span class="hero-slide__tag">Spotlight</span>
+            <h3 class="hero-slide__title">${escapeHtml(d.title)}</h3>
+            <p class="hero-slide__meta">${escapeHtml(d.tagline)} · ${d.episodes} eps</p>
+          </div>
+        `;
+        if (d.video_id) {
+          slide.addEventListener("click", () => goDetail(d.video_id));
+          slide.style.cursor = "pointer";
+        }
+        slidesRoot.appendChild(slide);
+
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "hero__dot" + (i === 0 ? " is-active" : "");
+        dot.setAttribute("role", "tab");
+        dot.setAttribute("aria-selected", i === 0 ? "true" : "false");
+        dot.setAttribute("aria-label", `Show ${d.title}`);
+        dot.addEventListener("click", () => setSlide(i, true));
+        dotsRoot.appendChild(dot);
+      });
+    }
+
+    function buildGrid() {
+      grid.innerHTML = "";
+      countEl.textContent = `${gridTotal} titles`;
+      if (!gridDramas.length) {
+        grid.innerHTML = `<div class="drama-load-hint">No titles on this page.</div>`;
+        return;
+      }
+      gridDramas.forEach((d, i) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "drama-card";
+        btn.style.setProperty("--delay", `${0.08 * i}s`);
+        btn.setAttribute("role", "listitem");
+        const bg = d.image ? `background-image:url('${String(d.image).replace(/'/g, "\\'")}')` : "";
+        btn.innerHTML = `
+          <div class="drama-card__thumb" style="${bg}">
+            <span class="drama-card__ep">${d.episodes} episodes</span>
+          </div>
+          <div class="drama-card__body">
+            <h3 class="drama-card__title">${escapeHtml(d.title)}</h3>
+            <p class="drama-card__sub">${escapeHtml(d.tagline)}</p>
+            <span class="drama-card__cta">Details
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </span>
+          </div>
+        `;
+        btn.addEventListener("click", () => goDetail(d.video_id));
+        grid.appendChild(btn);
+      });
+    }
+
+    function slidesEls() {
+      return slidesRoot.querySelectorAll(".hero-slide");
+    }
+
+    function dotsEls() {
+      return dotsRoot.querySelectorAll(".hero__dot");
+    }
+
+    function resetProgress() {
+      progress.classList.remove("is-ticking");
+      void progress.offsetWidth;
+      progress.style.setProperty("--tick-duration", `${AUTO_MS / 1000}s`);
+      progress.classList.add("is-ticking");
+    }
+
+    function clearTimer() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function startTimer() {
+      clearTimer();
+      if (bannerDramas.length < 2) return;
+      resetProgress();
+      const n = bannerDramas.length;
+      timer = setInterval(() => setSlide((index + 1) % n, false), AUTO_MS);
+    }
+
+    function setSlide(i, userIntent) {
+      const n = Math.max(1, bannerDramas.length || 1);
+      index = (i + n) % n;
+      slidesEls().forEach((el, j) => {
+        const on = j === index;
+        el.classList.toggle("is-active", on);
+        el.setAttribute("aria-hidden", on ? "false" : "true");
+      });
+      dotsEls().forEach((el, j) => {
+        const on = j === index;
+        el.classList.toggle("is-active", on);
+        el.setAttribute("aria-selected", on ? "true" : "false");
+      });
+      if (userIntent) {
+        startTimer();
+      } else {
+        resetProgress();
+      }
+    }
+
+    document.getElementById("hero-prev").addEventListener("click", () => {
+      setSlide(index - 1, true);
+      startTimer();
+    });
+    document.getElementById("hero-next").addEventListener("click", () => {
+      setSlide(index + 1, true);
+      startTimer();
+    });
+
+    let touchX = null;
+    slidesRoot.addEventListener("touchstart", (e) => {
+      touchX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    slidesRoot.addEventListener("touchend", (e) => {
+      if (touchX == null) return;
+      const dx = e.changedTouches[0].screenX - touchX;
+      touchX = null;
+      if (Math.abs(dx) < 48) return;
+      if (dx < 0) setSlide(index + 1, true);
+      else setSlide(index - 1, true);
+      startTimer();
+    }, { passive: true });
+
+    pagerPrev.addEventListener("click", () => void changeGridPage(gridPage - 1));
+    pagerNext.addEventListener("click", () => void changeGridPage(gridPage + 1));
+
+    void (async () => {
+      try {
+        await loadHome();
+      } catch (e) {
+        bannerDramas = [];
+        buildSlides();
+        grid.innerHTML = `<div class="drama-load-hint drama-load-hint--err">${escapeHtml(e.message || "Failed to load")}</div>`;
+        countEl.textContent = "";
+        pagerRoot.hidden = true;
+      }
+    })();
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) clearTimer();
+      else startTimer();
+    });
+
+    accountTrigger.addEventListener("click", () => {
+      if (accountModal.classList.contains("is-open")) closeAccountModal();
+      else openAccountModal();
+    });
+    document.getElementById("account-modal-backdrop").addEventListener("click", closeAccountModal);
+    document.getElementById("account-modal-close").addEventListener("click", closeAccountModal);
+    document.getElementById("login-google").addEventListener("click", () => void onLoginGoogleClick());
+    document.getElementById("login-apple").addEventListener("click", onLoginAppleClick);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && accountModal.classList.contains("is-open")) {
+        e.preventDefault();
+        closeAccountModal();
+      }
+    });
+  </script>
+</body>
+
+</html>

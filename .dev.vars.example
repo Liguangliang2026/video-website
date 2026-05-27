@@ -1,0 +1,23 @@
+# 复制为 .dev.vars（勿提交 git），供 npm run dev:api 读取
+# 值与 Cloudflare Pages → Settings → Environment variables (Production) 一致
+# 未配置时本地 /api 会返回 500：
+#   {"code":-1,"msg":"Server misconfiguration: set DRAMA_APP_ID, ..."}
+
+DRAMA_BASE_URL=https://open-api.zjchjc.cn
+DRAMA_APP_ID=
+DRAMA_APP_SECRET=
+
+# R2 公网访问域名（与 legacy player 中 R2_BASE 一致，无末尾 /）
+R2_PUBLIC_BASE=https://pub-8ad2e86cc0744f3da89fdd41881cd7bf.r2.dev
+
+AUTH_FROM_EMAIL=verify@teamshort.net
+AUTH_GOOGLE_CLIENT_ID=
+RESEND_API_KEY=
+
+SITE_BASE_URL=http://localhost:5173
+AIRWALLEX_PLAN_WEEKLY=
+AIRWALLEX_LEGAL_ENTITY_ID=
+AIRWALLEX_LINKED_PAYMENT_ACCOUNT_ID=
+AIRWALLEX_CLIENT_ID=
+AIRWALLEX_API_KEY=
+AIRWALLEX_WEBHOOK_SECRET=

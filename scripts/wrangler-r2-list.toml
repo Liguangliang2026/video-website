@@ -1,0 +1,7 @@
+name = "r2-list-temp"
+compatibility_date = "2026-05-14"
+main = "r2-list-worker.mjs"
+
+[[r2_buckets]]
+binding = "R2_VIDEOS"
+bucket_name = "video-bucket"

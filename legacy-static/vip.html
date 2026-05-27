@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>开通会员</title>
+</head>
+<body>
+  <h1>会员订阅</h1>
+  <button id="monthly">月付 $9.9</button>
+  <button id="yearly">年付 $99</button>
+  <div id="status"></div>
+
+  <script>
+    //前端完整付费页面（VIP 开通页）
+    const userId = '你的谷歌用户ID';
+    const planMap = {
+      monthly: 'plan_xxx_monthly',
+      yearly: 'plan_xxx_yearly'
+    };
+
+    async function checkStatus() {
+      const res = await fetch('/api/member/status', {
+        method: 'POST',
+        body: JSON.stringify({ userId })
+      });
+      const { isMember, expireAt } = await res.json();
+      if (isMember) {
+        document.getElementById('status').innerText = `已开通，到期：${new Date(expireAt).toLocaleDateString()}`;
+      }
+    }
+
+    async function subscribe(planKey) {
+      const res = await fetch('/api/payment/create-subscribe', {
+        method: 'POST',
+        body: JSON.stringify({ userId, plan_id: planMap[planKey] })
+      });
+      const { checkout_url } = await res.json();
+      window.location.href = checkout_url;
+    }
+
+    document.getElementById('monthly').onclick = () => subscribe('monthly');
+    document.getElementById('yearly').onclick = () => subscribe('yearly');
+    checkStatus();
+  </script>
+</body>
+</html>

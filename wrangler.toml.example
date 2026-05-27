@@ -1,0 +1,8 @@
+name = "creativevideo"
+compatibility_date = "2026-05-14"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "public"
+
+[vars]
+DRAMA_BASE_URL = "https://open-api.zjchjc.cn"
+R2_PUBLIC_BASE = "https://pub-xxx.r2.dev"

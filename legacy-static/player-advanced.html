@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Watch</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xgplayer@3.0.20/dist/index.min.css" crossorigin>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg: #000000;
+      --surface: #141414;
+      --text: #ffffff;
+      --muted: #9a9a9a;
+      --accent: #ff8c32;
+      --accent-dim: rgba(255, 140, 50, 0.35);
+      --chip: #2a2a2a;
+      --radius-video: 12px;
+      --radius-chip: 10px;
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 100%;
+    }
+
+    /* Breadcrumb */
+    .crumb {
+      flex-shrink: 0;
+      padding: 10px 16px 8px;
+      padding-top: max(10px, env(safe-area-inset-top));
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .crumb a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .crumb a:active { color: #ccc; }
+
+    .crumb .sep {
+      opacity: 0.45;
+      user-select: none;
+    }
+
+    .crumb .here {
+      color: #e8e8e8;
+      max-width: 42%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .page {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .player-section {
+      flex-shrink: 0;
+      /* Full-width player */
+      padding: 0 8px;
+    }
+
+    .player-shell {
+      border-radius: var(--radius-video);
+      /* Avoid overflow:hidden clipping controls on some devices */
+      overflow: visible;
+      background: #0a0a0a;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    /*
+      Same height rule as before: 16:9 from width, capped by 82vh and 720px.
+    */
+    .player-inner {
+      position: relative;
+      width: 100%;
+      height: min(56.25vw, 82vh, 720px);
+      min-height: 200px;
+      margin: 0 auto;
+    }
+
+    /* XGPlayer: height from .player-inner; no fluid padding-top trick (avoids jump after metadata). */
+    .player-inner .xgplayer {
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      box-sizing: border-box;
+      border-radius: var(--radius-video);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .player-inner .xgplayer .xgplayer-video-container {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      background: #000;
+    }
+
+    .player-inner .xgplayer-video {
+      object-fit: contain;
+    }
+
+    /* Control bar above video */
+    .player-inner .xgplayer .xgplayer-controls {
+      z-index: 5;
+    }
+
+    .detail-block {
+      padding: 14px 16px 10px;
+      flex-shrink: 0;
+    }
+
+    .detail-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      line-height: 1.35;
+    }
+
+    .detail-creator {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* Episode picker — no flex-grow so synopsis sits just below the strip */
+    .episodes-section {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+
+    .ep-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      padding: 6px 16px 10px;
+      flex-shrink: 0;
+    }
+
+    .range-tabs {
+      display: none;
+      flex: 1;
+      min-width: 0;
+      gap: 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .range-tabs::-webkit-scrollbar { display: none; }
+
+    .range-tabs.is-visible { display: flex; }
+
+    .range-tab {
+      flex-shrink: 0;
+      border: none;
+      background: none;
+      padding: 6px 0;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      position: relative;
+      font-family: inherit;
+    }
+
+    .range-tab.is-on {
+      color: var(--text);
+    }
+
+    .range-tab.is-on::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .ep-strip-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 16px 8px;
+      scrollbar-width: none;
+    }
+
+    .ep-strip-wrap::-webkit-scrollbar { display: none; }
+
+    /* Synopsis (剧情) directly under episode strip */
+    .synopsis-block {
+      flex-shrink: 0;
+      margin-top: 40px;
+      padding: 0 16px max(20px, env(safe-area-inset-bottom));
+    }
+
+    .synopsis-title {
+      margin: 0 0 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text);
+    }
+
+    .synopsis-body {
+      margin: 0;
+      font-size: 0.86rem;
+      line-height: 1.65;
+      color: #b8b8b8;
+    }
+
+    .ep-strip {
+      display: flex;
+      gap: 10px;
+      width: max-content;
+      padding-bottom: 4px;
+    }
+
+    .ep-btn {
+      flex-shrink: 0;
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-chip);
+      border: 1px solid transparent;
+      background: var(--chip);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .ep-btn:active { transform: scale(0.96); }
+
+    .ep-btn.is-active {
+      background: #1f1a18;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-dim), 0 4px 20px rgba(255, 140, 50, 0.2);
+      color: transparent;
+    }
+
+    /* Now playing: bars instead of episode number */
+    .eq {
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 3px;
+      height: 22px;
+    }
+
+    .ep-btn.is-active .eq { display: flex; }
+
+    .ep-btn.is-active .ep-num { display: none; }
+
+    /* VIP badge when series has more than 10 eps, from episode 10 */
+    .ep-vip-badge {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      z-index: 2;
+      font-size: 0.52rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, #ffe08a 0%, #d4a012 45%, #8b6914 100%);
+      color: #1a0f00;
+      line-height: 1;
+      pointer-events: none;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+    }
+
+    .ep-btn.is-active .ep-vip-badge {
+      opacity: 0.95;
+    }
+
+    .eq i {
+      display: block;
+      width: 3px;
+      border-radius: 1px;
+      background: var(--accent);
+      animation: eq 0.9s ease-in-out infinite;
+    }
+
+    .eq i:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .eq i:nth-child(2) { height: 16px; animation-delay: 0.15s; }
+    .eq i:nth-child(3) { height: 11px; animation-delay: 0.08s; }
+
+    @keyframes eq {
+      0%, 100% { transform: scaleY(0.45); opacity: 0.7; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
+
+    .ad-banner {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 14px 20px;
+      border-radius: 12px;
+      color: #111;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: none;
+      max-width: 86vw;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .ad-banner.show { display: block; }
+
+    .vip-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 250;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    .vip-modal.is-open {
+      display: flex;
+    }
+
+    .vip-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+    }
+
+    .vip-modal__panel {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+      padding: 22px 20px 18px;
+      border-radius: 14px;
+      background: #1e1e1e;
+      border: 1px solid rgba(255, 215, 100, 0.35);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+    }
+
+    .vip-modal__panel h3 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffe08a;
+    }
+
+    .vip-modal__panel p {
+      margin: 0 0 18px;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: #c8c8c8;
+    }
+
+    .vip-modal__actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .vip-modal__btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .vip-modal__btn--ghost {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ddd;
+    }
+
+    .vip-modal__btn--primary {
+      background: linear-gradient(135deg, #ffd76a, #d4a012);
+      color: #1a0f00;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="crumb" aria-label="breadcrumb">
+    <a href="javascript:history.back()">Home</a>
+    <span class="sep">/</span>
+    <span class="here" id="crumb-drama">…</span>
+    <span class="sep">/</span>
+    <span id="crumb-ep">Episode 1</span>
+  </nav>
+
+  <div class="page">
+    <section class="player-section">
+      <div class="player-shell">
+        <div class="player-inner">
+          <div id="xgplayer-root"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="detail-block">
+      <h1 class="detail-title" id="detail-title">Loading…</h1>
+      <div class="detail-creator" id="detail-creator">Creator: —</div>
+    </div>
+
+    <section class="episodes-section">
+      <div class="ep-toolbar">
+        <div class="range-tabs" id="range-tabs" role="tablist" aria-label="Episode ranges"></div>
+      </div>
+      <div class="ep-strip-wrap">
+        <div class="ep-strip" id="ep-strip" role="list"></div>
+      </div>
+    </section>
+
+    <section class="synopsis-block" aria-labelledby="synopsis-heading">
+      <h2 class="synopsis-title" id="synopsis-heading">Introduction</h2>
+      <p class="synopsis-body" id="synopsis-body"></p>
+    </section>
+  </div>
+
+  <div class="ad-banner" id="ad-banner" role="button" tabindex="0">Ad demo — tap to close</div>
+
+  <div class="vip-modal" id="vip-modal" role="dialog" aria-labelledby="vip-modal-title" aria-modal="true">
+    <div class="vip-modal__backdrop" id="vip-modal-backdrop"></div>
+    <div class="vip-modal__panel">
+      <h3 id="vip-modal-title">VIP only</h3>
+      <p id="vip-modal-text">From episode 10 onward is for VIP members. Subscribe to keep watching.</p>
+      <div class="vip-modal__actions">
+        <button type="button" class="vip-modal__btn vip-modal__btn--ghost" id="vip-modal-later">Not now</button>
+        <button type="button" class="vip-modal__btn vip-modal__btn--primary" id="vip-modal-recharge">Subscribe</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import Player, { MobilePreset } from 'https://esm.sh/xgplayer@3.0.20';
+    import EN from 'https://esm.sh/xgplayer@3.0.20/es/lang/en.js';
+    const EP_EXPAND_THRESHOLD = 10;
+    const RANGE_SIZE = 10;
+
+    const drama = new URLSearchParams(location.search).get('drama');
+    const crumbDrama = document.getElementById('crumb-drama');
+    const crumbEp = document.getElementById('crumb-ep');
+    const detailTitle = document.getElementById('detail-title');
+    const detailCreator = document.getElementById('detail-creator');
+    const rangeTabs = document.getElementById('range-tabs');
+    const epStrip = document.getElementById('ep-strip');
+    const adBanner = document.getElementById('ad-banner');
+    const vipModal = document.getElementById('vip-modal');
+    const vipModalText = document.getElementById('vip-modal-text');
+    const R2_BASE = 'https://pub-8ad2e86cc0744f3da89fdd41881cd7bf.r2.dev';
+
+    const PLACEHOLDER_SYNOPSIS =
+      'Hannah gave up everything for her fiancé, only to be brutally betrayed and abandoned in the States. Desperate to stay, she flash-m';
+
+    const dramaConfig = {
+      1: { prefix: 'the-wolfless-carpenter-rules-ep', start: 1, end: 48, name: 'The Wolfless Carpenter Rules the World', creator: 'Short Drama', synopsis: PLACEHOLDER_SYNOPSIS },
+      2: { prefix: 'lady-ceo-s-fatal-ep', start: 1, end: 51, name: 'Lady CEO\'s Fatal Contract', creator: 'Short Drama', synopsis: PLACEHOLDER_SYNOPSIS },
+      3: { prefix: 'the-discarded-ace-2041056545067761666-ep', start: 1, end: 41, name: 'The Discarded Ace', creator: 'Short Drama', synopsis: PLACEHOLDER_SYNOPSIS },
+      4: { prefix: 'from-butcher-to-no-ep', start: 1, end: 32, name: 'From Butcher to No.1', creator: 'Short Drama', synopsis: PLACEHOLDER_SYNOPSIS },
+      5: { prefix: 'married-the-mafioso-i-ep', start: 1, end: 54, name: 'Married The Mafioso I Saved', creator: 'Short Drama', synopsis: PLACEHOLDER_SYNOPSIS },
+      6: { prefix: 'my-classmate-is-my-ep', start: 1, end: 65, name: 'My Classmate Is My Grandson', creator: 'Short Drama', synopsis: PLACEHOLDER_SYNOPSIS },
+    };
+
+    const config = dramaConfig[drama];
+    if (!config) {
+      alert('Drama not found.');
+      throw new Error('drama not found');
+    }
+
+    crumbDrama.textContent = config.name;
+    detailCreator.textContent = `Creator: ${config.creator || '—'}`;
+    document.getElementById('synopsis-body').textContent = config.synopsis || PLACEHOLDER_SYNOPSIS;
+
+    const episodes = [];
+    for (let i = config.start; i <= config.end; i++) {
+      const ep = String(i).padStart(2, '0');
+      episodes.push({
+        num: i,
+        file: `${config.prefix}${ep}.mp4`,
+        url: `${R2_BASE}/video/${drama}/${config.prefix}${ep}.mp4`
+      });
+    }
+
+    const total = episodes.length;
+    const needsExpand = total > EP_EXPAND_THRESHOLD;
+    /** VIP from episode 10 when the series has more than 10 episodes. */
+    const VIP_FROM_EPISODE_NUM = 10;
+    function isVipEpisodeNum(episodeNum) {
+      return needsExpand && episodeNum >= VIP_FROM_EPISODE_NUM;
+    }
+
+    function openVipModal(episodeNum) {
+      if (typeof episodeNum === 'number' && Number.isFinite(episodeNum)) {
+        vipModalText.textContent = `Episode ${episodeNum} is VIP-only. Subscribe to keep watching.`;
+      } else {
+        vipModalText.textContent =
+          'From episode 10 onward is for VIP members. Subscribe to keep watching.';
+      }
+      vipModal.classList.add('is-open');
+    }
+
+    function closeVipModal() {
+      vipModal.classList.remove('is-open');
+    }
+
+    let rangeIndex = 0;
+
+    /** @returns {{ from: number; to: number; label: string }[]} */
+    function buildRanges() {
+      const ranges = [];
+      for (let start = 0; start < total; start += RANGE_SIZE) {
+        const end = Math.min(start + RANGE_SIZE, total) - 1;
+        const a = episodes[start].num;
+        const b = episodes[end].num;
+        const label = a === b ? String(a) : `${a}-${b}`;
+        ranges.push({ from: start, to: end, label });
+      }
+      return ranges;
+    }
+
+    const ranges = buildRanges();
+
+    function rangeForEpisodeIndex(idx) {
+      for (let r = 0; r < ranges.length; r++) {
+        if (idx >= ranges[r].from && idx <= ranges[r].to) return r;
+      }
+      return 0;
+    }
+
+    function setCrumbAndTitle(epIndex) {
+      const ep = episodes[epIndex];
+      crumbEp.textContent = `Episode ${ep.num}`;
+      detailTitle.textContent = `${config.name} - Episode ${ep.num}`;
+    }
+
+    function renderRangeTabs() {
+      rangeTabs.innerHTML = '';
+      if (!needsExpand) {
+        rangeTabs.classList.remove('is-visible');
+        return;
+      }
+      rangeTabs.classList.add('is-visible');
+      ranges.forEach((r, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'range-tab' + (i === rangeIndex ? ' is-on' : '');
+        b.textContent = r.label;
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-selected', String(i === rangeIndex));
+        b.addEventListener('click', () => {
+          rangeIndex = i;
+          renderRangeTabs();
+          renderEpStrip();
+        });
+        rangeTabs.appendChild(b);
+      });
+    }
+
+    function renderEpStrip() {
+      epStrip.innerHTML = '';
+      let from;
+      let to;
+      if (!needsExpand) {
+        from = 0;
+        to = total - 1;
+      } else {
+        from = ranges[rangeIndex].from;
+        to = ranges[rangeIndex].to;
+      }
+
+      for (let i = from; i <= to; i++) {
+        const ep = episodes[i];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ep-btn' + (i === activeIndex ? ' is-active' : '');
+        btn.setAttribute('role', 'listitem');
+        btn.setAttribute('aria-label', `Episode ${ep.num}`);
+        btn.dataset.index = String(i);
+        const spanNum = document.createElement('span');
+        spanNum.className = 'ep-num';
+        spanNum.textContent = String(ep.num);
+        const eq = document.createElement('span');
+        eq.className = 'eq';
+        eq.setAttribute('aria-hidden', 'true');
+        for (let k = 0; k < 3; k++) {
+          const bar = document.createElement('i');
+          eq.appendChild(bar);
+        }
+        btn.appendChild(spanNum);
+        btn.appendChild(eq);
+        if (isVipEpisodeNum(ep.num)) {
+          btn.classList.add('is-vip');
+          const badge = document.createElement('span');
+          badge.className = 'ep-vip-badge';
+          badge.textContent = 'VIP';
+          badge.setAttribute('aria-hidden', 'true');
+          btn.appendChild(badge);
+        }
+        btn.addEventListener('click', () => loadEpisode(i));
+        epStrip.appendChild(btn);
+      }
+    }
+
+    let activeIndex = 0;
+
+    function maybeShowAd(epNum) {
+      if (epNum % 3 === 0) {
+        adBanner.classList.add('show');
+        setTimeout(() => adBanner.classList.remove('show'), 2800);
+      }
+    }
+
+    const player = new Player({
+      id: 'xgplayer-root',
+      url: episodes[0].url,
+      width: '100%',
+      height: '100%',
+      fluid: false,
+      fitVideoSize: 'fixWidth',
+      videoFillMode: 'contain',
+      lang: 'en',
+      /* MobilePreset bundles zh-cn; keep UI strings in English for this page */
+      i18n: [EN],
+      playsinline: true,
+      videoInit: true,
+      /* XG ESM build: register Mobile preset or controls stay empty */
+      presets: [MobilePreset],
+      /* Keep controls visible on tap; longer idle hide */
+      closeControlsBlur: false,
+      closeFocusVideoFocus: false,
+      inactive: 6000,
+      playbackRate: [0.75, 1, 1.25, 1.5, 2],
+      commonStyle: {
+        playedColor: '#ff8c32',
+        progressColor: 'rgba(255, 255, 255, 0.28)',
+        volumeColor: '#ff8c32',
+      },
+      videoAttributes: {
+        playsinline: 'true',
+        'webkit-playsinline': 'true',
+        'x5-playsinline': 'true',
+        'x5-video-player-type': 'h5',
+        'x5-video-player-fullscreen': 'true',
+      },
+    });
+
+    window.addEventListener('resize', () => {
+      try {
+        player.resize();
+      } catch {
+        /* ignore */
+      }
+    });
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        try {
+          player.resize();
+        } catch {
+          /* ignore */
+        }
+      }, 300);
+    });
+
+    function loadEpisode(index) {
+      if (index < 0 || index >= episodes.length) return;
+      const target = episodes[index];
+      if (isVipEpisodeNum(target.num)) {
+        openVipModal(target.num);
+        return;
+      }
+      activeIndex = index;
+      const ep = episodes[index];
+      const p = player.switchURL(ep.url);
+      if (p && typeof p.then === 'function') {
+        void p.then(() => player.play()).catch(() => {});
+      } else {
+        void player.play();
+      }
+      setCrumbAndTitle(index);
+      if (needsExpand) {
+        rangeIndex = rangeForEpisodeIndex(activeIndex);
+        renderRangeTabs();
+        renderEpStrip();
+      } else {
+        renderEpStrip();
+      }
+      maybeShowAd(ep.num);
+    }
+
+    player.on('ended', () => {
+      const next = activeIndex + 1;
+      if (next >= episodes.length) return;
+      if (isVipEpisodeNum(episodes[next].num)) {
+        openVipModal(episodes[next].num);
+        return;
+      }
+      loadEpisode(next);
+    });
+
+    renderRangeTabs();
+    renderEpStrip();
+    setCrumbAndTitle(0);
+    maybeShowAd(episodes[0].num);
+
+    adBanner.addEventListener('click', () => adBanner.classList.remove('show'));
+
+    document.getElementById('vip-modal-later').addEventListener('click', closeVipModal);
+    document.getElementById('vip-modal-backdrop').addEventListener('click', closeVipModal);
+    document.getElementById('vip-modal-recharge').addEventListener('click', () => {
+      alert('Replace this with your billing or checkout URL.\n(Demo placeholder.)');
+      closeVipModal();
+    });
+  </script>
+</body>
+
+</html>

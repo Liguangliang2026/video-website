@@ -1,0 +1,56 @@
+# Pages 项目名须与 deploy 时 --project-name 一致
+name = "creativevideo"
+compatibility_date = "2026-05-14"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "public"
+
+# 明文环境变量（提交前改成你的真实值；改完后需 npm run deploy）
+# 仪表板里只能再加「加密」变量，明文只能写在这里
+[vars]
+DRAMA_BASE_URL = "https://open-api.zjchjc.cn"
+R2_PUBLIC_BASE = "https://pub-8ad2e86cc0744f3da89fdd41881cd7bf.r2.dev"
+# 须为 Resend 已 Verified 的域名邮箱（teamshort.net），不能用 onboarding@resend.dev
+AUTH_FROM_EMAIL = "verify@teamshort.net"
+# Google 登录（Console → OAuth Web Client；JS 来源填 https://teamshort.net）
+AUTH_GOOGLE_CLIENT_ID = "590870829652-l4qcg40pmahv5hugfbrkem0jhgu70vrj.apps.googleusercontent.com"
+# AUTH_FACEBOOK_APP_ID = ""
+
+# Airwallex VIP（Price ID = pri_xxx，在 Billing → Prices 创建）
+# 控制台 Settings → Account details：Linked payment account ID (acct_…)、Legal entity ID (le_…)
+# 有多个收款账户时必须填下面两项，否则 create-subscribe 会 400
+SITE_BASE_URL = "https://teamshort.net"
+# 周卡固定扣费节点：每周日 00:00（海外默认美东 ET；西海岸可改为 America/Los_Angeles）
+BILLING_TIMEZONE = "America/New_York"
+AIRWALLEX_PLAN_WEEKLY = "pri_sgpdzdfflhir6w9x9f3"
+AIRWALLEX_PLAN_MONTHLY = "pri_sgpd5bxmqhiup8ye67u"
+AIRWALLEX_LEGAL_ENTITY_ID = "le_F5_gCI9qNoqrzU56eIG-wA"
+AIRWALLEX_LINKED_PAYMENT_ACCOUNT_ID = "acct_DGpXyxi-PSehNs_WT__Uyw"
+
+# R2 桶绑定（线上按真实文件名列出分集；与 sync:r2-episodes 使用同一桶）
+[[r2_buckets]]
+binding = "R2_VIDEOS"
+bucket_name = "video-bucket"
+
+# KV：验证码与用户（绑定名须为 USER_DB，与 Functions 里 context.env.USER_DB 一致）
+# 仪表板若提示「由 wrangler.toml 管理」则只能在此配置，不能在手动画板添加
+[[kv_namespaces]]
+binding = "USER_DB"
+id = "dde7503627364fb796ff3214cb24fde9"
+
+# 邮箱验证码登录（Airwallex 支付用）
+# AUTH_OTP_EXPOSE_IN_RESPONSE = "1"   # 仅本地调试，生产务必关闭
+
+# VIP 续费提醒（Pages 不支持 wrangler [triggers]，请用外部定时任务每天请求一次）：
+#   GET https://teamshort.net/api/cron/subscription-reminders?secret=你的CRON_SECRET
+# 可用 cron-job.org / EasyCron 等，建议每天 14:00 UTC。先执行：
+#   wrangler pages secret put CRON_SECRET --project-name=creativevideo
+
+# 以下为密钥，不要写进本文件，用命令或仪表板添加：
+#   wrangler pages secret put DRAMA_APP_ID --project-name=creativevideo
+#   wrangler pages secret put DRAMA_APP_SECRET --project-name=creativevideo
+#   wrangler pages secret put RESEND_API_KEY --project-name=creativevideo
+#   wrangler pages secret put AIRWALLEX_CLIENT_ID --project-name=creativevideo
+#   wrangler pages secret put AIRWALLEX_API_KEY --project-name=creativevideo
+#   wrangler pages secret put AIRWALLEX_WEBHOOK_SECRET --project-name=creativevideo
+#   wrangler pages secret put CRON_SECRET --project-name=creativevideo  # 可选，手动触发 cron 时用
+# 手动测续费提醒：curl -H "Authorization: Bearer $CRON_SECRET" https://teamshort.net/api/cron/subscription-reminders
