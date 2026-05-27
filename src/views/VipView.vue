@@ -368,7 +368,7 @@ watch(
             <h3 class="vip-upgrade__title">Switch to Monthly</h3>
           </div>
           <p class="vip-upgrade__price">
-            <span class="vip-upgrade__amount">$29.9</span>
+            <span class="vip-upgrade__amount">$29.988</span>
             <span class="vip-upgrade__period">/ month</span>
           </p>
           <p class="vip-upgrade__note">
